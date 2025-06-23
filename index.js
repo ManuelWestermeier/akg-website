@@ -3,20 +3,40 @@ const axios = require('axios');
 
 const app = express();
 
-app.get('/', async (req, res) => {
+// Base URL of the target site
+const BASE_URL = 'https://www.akg-traunstein.de';
+
+app.use(async (req, res) => {
   try {
-    // Hole die Originalseite als Text
-    const response = await axios.get('https://www.akg-traunstein.de/', {
-      responseType: 'text'
+    // Construct the full URL
+    const targetUrl = `${BASE_URL}${req.originalUrl}`;
+
+    // Fetch the response as raw data (stream or text depending on content)
+    const response = await axios.get(targetUrl, {
+      responseType: 'arraybuffer', // handle binary & text
+      headers: {
+        'User-Agent': req.get('User-Agent') || 'Mozilla/5.0'
+      }
     });
 
-    // Ersetze "Grußwort" durch "Hallo"
-    const modifiedHtml = response.data.replace(/Grußwort/g, 'Hallo');
+    // Detect content type
+    const contentType = response.headers['content-type'] || '';
 
-    res.send(modifiedHtml);
+    // Forward headers
+    res.set('Content-Type', contentType);
+
+    if (contentType.includes('text/html')) {
+      // Replace "Grußwort" with "Hallo" only in HTML pages
+      const html = response.data.toString('utf8').replace(/Grußwort/g, 'Hallo');
+      res.send(html);
+    } else {
+      // For other types (images, CSS, JS...) just pipe the raw data
+      res.send(response.data);
+    }
+
   } catch (err) {
-    console.error('Fehler beim Laden:', err.message);
-    res.status(500).send('Fehler beim Laden der Seite');
+    console.error(`Proxy error for ${req.originalUrl}:`, err.message);
+    res.status(500).send('Proxy error');
   }
 });
 
