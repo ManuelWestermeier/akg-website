@@ -1,23 +1,21 @@
 const express = require('express');
 const axios = require('axios');
-const cheerio = require('cheerio');
 
 const app = express();
 
 app.get('/', async (req, res) => {
   try {
-    const response = await axios.get('https://www.akg-traunstein.de/');
-    const $ = cheerio.load(response.data);
-
-    // Beispiel: Ersetze "Grußwort" durch "Hallo"
-    $('*').each(function () {
-      if ($(this).text().includes("Grußwort")) {
-        $(this).text($(this).text().replace("Grußwort", "Hallo"));
-      }
+    // Hole die Originalseite als Text
+    const response = await axios.get('https://www.akg-traunstein.de/', {
+      responseType: 'text'
     });
 
-    res.send($.html());
+    // Ersetze "Grußwort" durch "Hallo"
+    const modifiedHtml = response.data.replace(/Grußwort/g, 'Hallo');
+
+    res.send(modifiedHtml);
   } catch (err) {
+    console.error('Fehler beim Laden:', err.message);
     res.status(500).send('Fehler beim Laden der Seite');
   }
 });
