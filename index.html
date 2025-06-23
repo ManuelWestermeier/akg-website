@@ -8,16 +8,25 @@
       margin: 0;
       padding: 0;
       height: 100%;
+      overflow: hidden; /* verhindert Scrollbalken auf der Hauptseite */
     }
     iframe {
       width: 100%;
       height: 100%;
       border: none;
+      overflow: hidden; /* Versuch, Scrollen im iframe zu deaktivieren */
+      scrollbar-width: none; /* für Firefox */
+    }
+    iframe::-webkit-scrollbar {
+      display: none; /* für Chrome/Safari */
     }
   </style>
 </head>
 <body>
-  <iframe src="https://www.akg-traunstein.de/">
+  <iframe 
+    src="https://www.akg-traunstein.de/" 
+    scrolling="no"
+    sandbox="allow-same-origin allow-scripts allow-forms">
     Dein Browser unterstützt keine iframes.
   </iframe>
 </body>
